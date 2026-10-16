@@ -191,7 +191,7 @@ function spawn(z){const r=Math.random(),late=dist>350;
   const sign=box(13,1,.3,M(0xff2d4a,0xff2d4a,1));sign.position.set(0,h+.9,0);g.add(sign);g.position.z=z;S.add(g);const t={z0:z,z1:z-L,h};obs.push({kind:'tunnel',z1:z-L,m:g,c:t});ceils.push(t);return L+15}
  if(r<.42){const L=10+Math.random()*6,g=new THREE.Group(),pit=box(12.2,.12,L,new THREE.MeshBasicMaterial({color:0x000000}));g.add(pit);for(const s of[-1,1]){const e=box(12,.1,.25,M(0xff6600,0xff6600,3));e.position.set(0,.06,s*L/2);g.add(e)}g.position.z=z-L/2;S.add(g);obs.push({kind:'gap',z0:z,z1:z-L,m:g});return L}
  const early=introT<30,n=early?1+(Math.random()<introT/45?1:0):1+Math.min(3,Math.random()*(1+dist/1200)|0),xs=[-4,-1.3,1.3,4].sort(()=>Math.random()-.5);let maxL=0;
- for(let i=0;i<n;i++){const T=TYPES[Math.random()*4|0],m=makeVeh(T),x=xs[i]+(Math.random()-.5);m.position.set(x,0,z-T.l/2);S.add(m);obs.push({kind:'car',x,z0:z,z1:z-T.l,w:T.w,h:T.h,m,cl:false});maxL=Math.max(maxL,T.l)}if(Math.random()<.3){const air=Math.random()<.45,px=(Math.random()-.5)*9,py=air?4+Math.random()*2:.9,pz=z+10,g=new THREE.Group();
+ for(let i=0;i<n;i++){const T=TYPES[Math.random()*4|0],m=makeVeh(T),x=xs[i]+(Math.random()-.5);m.position.set(x,0,z-T.l/2);S.add(m);obs.push({kind:'car',n:T.n,x,z0:z,z1:z-T.l,w:T.w,h:T.h,m,cl:false});maxL=Math.max(maxL,T.l)}if(Math.random()<.3){const air=Math.random()<.45,px=(Math.random()-.5)*9,py=air?4+Math.random()*2:.9,pz=z+10,g=new THREE.Group();
   g.add(new THREE.Mesh(new THREE.SphereGeometry(.7,20,14),new THREE.MeshStandardMaterial({color:0x003322,emissive:0x2bff9a,emissiveIntensity:1.5,transparent:true,opacity:.55})));
   const wm=M(0,0x00f0ff,4),h=box(.14,.9,.14,wm);h.rotation.z=.6;g.add(h);const hd=box(.42,.16,.14,wm);hd.position.set(.28,.38,0);hd.rotation.z=.6;g.add(hd);g.add(new THREE.PointLight(0x2bff9a,2,6));
   g.position.set(px,py,pz);S.add(g);obs.push({kind:'pick',x:px,y:py,z1:pz,m:g})}
@@ -254,8 +254,10 @@ function shot(){renderFrame();const c=document.createElement('canvas');c.width=R
 // ---- update
 for(let i=0;i<10;i++)$('hp').appendChild(document.createElement('i'));
 function hpHud(){const segs=$('hp').children,f=hp/MAXHP,n=Math.ceil(f*10),col=f>.6?'#00f0ff':f>.3?'#ff2bd6':'#ff2020';for(let i=0;i<10;i++){segs[i].style.background=i<n?col:'#2a0a33';segs[i].style.boxShadow=i<n?'0 0 6px '+col:'none'}$('hpn').textContent=Math.ceil(hp)+' / '+MAXHP+' HP';$('hpn').style.color=col}
-function hurt(n,why,force){if(invT>0&&!force)return false;hp=Math.max(0,hp-n);hits++;combo=1;invT=1.5;sinceHit=0;shake=Math.max(shake,.7);noise(.3,.3,200);tone(160,.3,'square',.14,50);
- const w=$('hpw');w.classList.remove('hit');void w.offsetWidth;w.classList.add('hit');pop('-'+n+' HP','#ff2020');hpHud();if(hp<=0){over(why);return true}return false}
+function hurt(n,why,force,label){n=Math.round(Math.min(DMG.cap,n));if(invT>0&&!force)return false;hp=Math.max(0,hp-n);hits++;combo=1;invT=1.5;sinceHit=0;shake=Math.max(shake,.25+n/450);noise(.3,.3,200);tone(160,.3,'square',.14,50);
+ const w=$('hpw');w.classList.remove('hit');void w.offsetWidth;w.classList.add('hit');pop('-'+n+' HP'+(label?'  '+label:''),'#ff2020');hpHud();if(hp<=0){over(why);return true}return false}
+const DMG={robotaxi:240,van:240,pickup:330,truck:460,land:180,gap:400,cap:600};
+const rnd=()=>.85+Math.random()*.3,spF=()=>Math.max(.5,Math.min(1.2,curSpeed()/62));
 function gapAt(z){for(const o of obs)if(o.kind==='gap'&&z<o.z0+2&&z>o.z1-2)return o;return null}
 function upright(){P.pitch=P.pT=0;P.roll=P.rT=0;P.trick=null}
 function landOK(){const u=upY();return u>.8&&Math.abs(P.pitch-P.pT)<.5&&Math.abs(P.roll-P.rT)<.5}
@@ -282,22 +284,22 @@ function update(dt){
     const c=ceilAt(z);
     if(c&&P.vy>0){if(u<-.8&&P.y>=c.h-.05){P.mode='ceil';P.ceil=c;P.y=c.h;P.vy=0;snap();P.trick=null;shake=.15;tone(200,.15,'sine',.15,400);pop('CEILING STICK! x'+(++combo),'#5cf')}
      else if(u>=-.8&&P.y+1.25>=c.h){P.y=c.h-1.25;P.vy=-3;shake=.3;tone(70,.1,'square',.1)}}
-    if(P.y<=0&&P.vy<=0&&!onGap(z)){if(P.y>-1){if(!landOK()){if(hurt(20,'Landed on your roof. Wheels down!'))return;upright();P.spinV=10}snap();P.trick=null;P.mode='ground';P.y=0;P.vy=0;shake=Math.max(shake,.15);tone(90,.08,'sine',.18);for(let i=0;i<14;i++)emit(P.x+(Math.random()-.5)*2,.1,z,(Math.random()-.5)*5,Math.random()*2,0,STEAM,.4)}}
-    if(P.y<-7){const g=gapAt(z);invT=0;if(hurt(35,'Fell into the void.',true))return;dist=g?-g.z1+4:dist+20;P.mode='ground';P.y=0;P.vy=0;P.vx=0;upright();pop('RESPAWN -35 HP','#ff2bd6')}
+    if(P.y<=0&&P.vy<=0&&!onGap(z)){if(P.y>-1){if(!landOK()){if(hurt(Math.min(330,DMG.land*(upY()<0?1.6:1)*Math.max(1,Math.min(2,-P.vy/16))*rnd()),'Landed on your roof. Wheels down!',false,upY()<0?'ROOF LANDING':'HARD LANDING'))return;upright();P.spinV=10}snap();P.trick=null;P.mode='ground';P.y=0;P.vy=0;shake=Math.max(shake,.15);tone(90,.08,'sine',.18);for(let i=0;i<14;i++)emit(P.x+(Math.random()-.5)*2,.1,z,(Math.random()-.5)*5,Math.random()*2,0,STEAM,.4)}}
+    if(P.y<-7){const g=gapAt(z);invT=0;if(hurt(DMG.gap*rnd(),'Fell into the void.',true,'INTO THE VOID'))return;dist=g?-g.z1+4:dist+20;P.mode='ground';P.y=0;P.vy=0;P.vx=0;upright();pop('RESPAWN -35 HP','#ff2bd6')}
    }
    // structures & cars
    const yc=P.y+upY()*.6;
    for(const o of obs){
     if(o.kind==='car'&&!o.dead){if(invT<=0&&Math.abs(P.x-o.x)<o.w/2+.85&&z-2.4<o.z0&&z+2.4>o.z1&&yc-.6<o.h&&yc+.6>0){o.dead=true;o.cl=true;for(let i=0;i<60;i++)emit(o.x,1+Math.random()*o.h,(o.z0+o.z1)/2,(Math.random()-.5)*14,Math.random()*9,(Math.random()-.5)*8,Math.random()<.5?FIREC:GOLD,1,1);o.fly={vx:Math.sign(o.x-P.x||1)*14,vy:9,r:(Math.random()-.5)*8};
- if(hurt(25,'Hit a '+(o.h>3?'truck':'vehicle')+'.'))return;P.mode='air';P.loop=null;P.vy=7;P.vx=Math.sign(P.x-o.x||1)*12;upright();P.spinV=14;continue}if(!o.cl&&z+2.4<o.z1){o.cl=true;if(Math.abs(P.x-o.x)<o.w/2+1.5){hopped++;score+=60*combo}}}
-    else if(o.kind==='pick'&&!o.got){if(Math.abs(P.x-o.x)<1.8&&Math.abs(z-o.z1)<2.6&&Math.abs(P.y+.6-o.y)<1.9){o.got=true;S.remove(o.m);hp=Math.min(MAXHP,hp+150);hpHud();pop('+150 HP REPAIR','#7cff6b');tone(660,.1,'triangle',.12);setTimeout(()=>tone(1320,.18,'triangle',.1),80);for(let i=0;i<30;i++)emit(o.x,o.y,o.z1,(Math.random()-.5)*8,(Math.random()-.5)*8,(Math.random()-.5)*8,CY,.6)}}
+ if(hurt((DMG[o.n]||250)*spF()*rnd()*(Math.abs(P.x-o.x)>o.w/2?.5:1),'Hit a '+o.n+'.',false,Math.abs(P.x-o.x)>o.w/2?'SIDESWIPE':'HEAD-ON '+o.n.toUpperCase()))return;P.mode='air';P.loop=null;P.vy=7;P.vx=Math.sign(P.x-o.x||1)*12;upright();P.spinV=14;continue}if(!o.cl&&z+2.4<o.z1){o.cl=true;if(Math.abs(P.x-o.x)<o.w/2+1.5){hopped++;score+=60*combo}}}
+    else if(o.kind==='pick'&&!o.got){if(Math.abs(P.x-o.x)<1.8&&Math.abs(z-o.z1)<2.6&&Math.abs(P.y+.6-o.y)<1.9){o.got=true;S.remove(o.m);hp=Math.min(MAXHP,hp+200);hpHud();pop('+200 HP REPAIR','#7cff6b');tone(660,.1,'triangle',.12);setTimeout(()=>tone(1320,.18,'triangle',.1),80);for(let i=0;i<30;i++)emit(o.x,o.y,o.z1,(Math.random()-.5)*8,(Math.random()-.5)*8,(Math.random()-.5)*8,CY,.6)}}
     else if((o.kind==='loop'||o.kind==='cramp')&&!o.done&&z<=o.z){o.done=true;if(P.mode==='ground'){P.mode='loop';P.loop={o,th:0,max:o.kind==='loop'?Math.PI*2:Math.PI};tone(300,.5,'sawtooth',.07,900)}}
    }
   }
   for(let i=obs.length-1;i>=0;i--){const o=obs[i],far=o.kind==='cramp'?o.deck.z1:o.kind==='loop'?o.z-o.R-o.k*6.3:o.z1;if(far>-dist+30){S.remove(o.m);obs.splice(i,1)}}
   ceils=ceils.filter(c=>c.z1<-dist+30);
   while(nextZ>-dist-280){const len=spawn(nextZ);nextZ-=len+26+Math.random()*30+sp*.6+(introT<30?22:0)}
-  invT=Math.max(0,invT-dt);sinceHit+=dt;if(sinceHit>5&&hp<MAXHP){hp=Math.min(MAXHP,hp+10*dt);hpHud()}CAR.visible=invT>0?(Math.floor(invT*14)%2===0):true;
+  invT=Math.max(0,invT-dt);sinceHit+=dt;if(sinceHit>6&&hp<MAXHP){hp=Math.min(MAXHP,hp+3*dt);hpHud()}CAR.visible=invT>0?(Math.floor(invT*14)%2===0):true;
   P.spinV=(P.spinV||0)*Math.pow(.05,dt);P.spinA=((P.spinA||0)+P.spinV*dt)*(P.spinV<.3?.85:1);
   for(const o of obs){if(o.fly){o.m.position.x+=o.fly.vx*dt;o.m.position.y+=o.fly.vy*dt;o.fly.vy-=25*dt;o.m.rotation.z+=o.fly.r*dt;if(o.m.position.y<-8)o.m.visible=false}if(o.kind==='pick'&&o.m){o.m.rotation.y+=dt*3;o.m.position.y=o.y+Math.sin(performance.now()/300)*.2}}
   $('sc').textContent=Math.floor(score);$('sub').textContent=`BEST ${best} · ${Math.min(TOPKMH,Math.round(sp*KMH))} km/h · x${combo}${P.mode==='ceil'?' · UPSIDE DOWN':''}`;$('fu').style.width=Math.max(0,P.fuel*100)+'%';$('fu').style.background=P.fuel>.15?'#5cf':'#f44';
