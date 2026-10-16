@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>ROADSTER — fly, flip, drive upside down</title>
 <style>
 :root{--m:#ff2bd6;--c:#00f0ff;--y:#ffe600}
@@ -56,7 +56,22 @@ kbd.m{border-color:var(--m);color:var(--m);background:#1a0020;box-shadow:0 0 6px
 #tO{right:calc(env(safe-area-inset-right) + 6px);bottom:calc(env(safe-area-inset-bottom) + 148px);width:62px;height:62px;font-size:11px!important}
 @media (orientation:portrait){#tL,#tR{width:72px;height:72px}#tR{left:calc(env(safe-area-inset-left) + 98px)}#tF{width:104px;height:104px}#tB{right:calc(env(safe-area-inset-right) + 130px)}#tD{right:calc(env(safe-area-inset-right) + 130px);bottom:calc(env(safe-area-inset-bottom) + 92px)}#tU{bottom:calc(env(safe-area-inset-bottom) + 134px);right:calc(env(safe-area-inset-right) + 66px)}#tO{bottom:calc(env(safe-area-inset-bottom) + 134px)}}
 #hud{padding-right:44px!important;left:calc(env(safe-area-inset-left) + 14px);top:calc(env(safe-area-inset-top) + 12px)}#tb{right:calc(env(safe-area-inset-right) + 10px);top:calc(env(safe-area-inset-top) + 10px)}
-</style></head><body>
+html,body{position:fixed;inset:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none;touch-action:none}
+html,body,canvas,button,#ui,#tc,#tc *,#hud,#tb,#tb *{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+*{-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
+.p{touch-action:pan-y;overscroll-behavior:contain}.p button{touch-action:manipulation}
+</style>
+<script>
+(function(){var nz=function(e){e.preventDefault()};
+['gesturestart','gesturechange','gestureend'].forEach(function(t){document.addEventListener(t,nz,{passive:false})});
+var onBtn=function(e){return e.target&&e.target.closest&&e.target.closest('#tc .tb')};
+document.addEventListener('touchstart',function(e){if(e.touches.length>1&&!onBtn(e))e.preventDefault()},{passive:false});
+document.addEventListener('touchmove',function(e){if(e.touches.length>1&&!onBtn(e))e.preventDefault();if(e.scale!==undefined&&e.scale!==1)e.preventDefault()},{passive:false});
+var lastEnd=0;document.addEventListener('touchend',function(e){var n=Date.now();if(n-lastEnd<300&&!(e.target.closest&&e.target.closest('button')))e.preventDefault();lastEnd=n},{passive:false});
+document.addEventListener('dblclick',nz,{passive:false});
+addEventListener('wheel',function(e){if(e.ctrlKey)e.preventDefault()},{passive:false});
+addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&['+','-','=','_','0'].indexOf(e.key)>=0)e.preventDefault()});})();
+</script></head><body>
 <div id="hud" style="display:none"><div id="sc">0</div><div id="sub"></div><div id="bar"><div id="fu"></div></div><div id="hpw"><span>HP</span><div id="hp"></div><b id="hpn">1500 / 1500 HP</b></div></div>
 <div id="scan"></div><div id="vig"></div><div id="big"></div><div id="pop"></div><div id="ui"></div><div id="tc"><div class="tb" id="tL">◀</div><div class="tb" id="tR">▶</div><div class="tb m" id="tF">FLY</div><div class="tb" id="tB">BOOST</div><div class="tb m" id="tD">FLIP▼</div><div class="tb m" id="tU">FLIP▲</div><div class="tb" id="tO">ROLL</div></div><div id="tb"><button id="fx">FX</button><button id="mb">🎵</button><button id="pb">❚❚</button></div>
 <script type="importmap">{"imports":{"three":"./three.module.js","three/addons/":"./addons/"}}</script>
