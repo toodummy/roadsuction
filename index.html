@@ -29,10 +29,10 @@ button.s{background:#003844;box-shadow:0 0 10px var(--c)}.k{opacity:.85;font-siz
 body.glx canvas{animation:gx .6s steps(8)}@keyframes gx{0%{filter:hue-rotate(0) saturate(3);transform:translate(8px,0)}25%{transform:translate(-12px,4px) skewX(8deg);filter:invert(1)}50%{transform:translate(6px,-3px);filter:hue-rotate(180deg)}75%{transform:translate(-4px,0)}100%{transform:none;filter:none}}
 #hpw{display:flex;align-items:center;gap:6px;margin-top:7px;font-size:11px;letter-spacing:2px;color:#ffd6f6}
 #hp{display:flex;gap:2px;width:170px;height:10px;transform:skewX(-20deg)}#hp i{flex:1;background:#2a0a33;transition:background .2s}
-#hpn{font-size:12px;color:var(--c);min-width:28px}
+#hpn{font-size:12px;color:var(--c);min-width:110px;white-space:nowrap}
 #hpw.hit{animation:hh .45s steps(5)}@keyframes hh{0%{transform:translate(6px,0);filter:invert(1)}40%{transform:translate(-6px,2px);filter:hue-rotate(120deg)}80%{transform:translate(3px,-1px)}100%{transform:none;filter:none}}
 </style></head><body>
-<div id="hud" style="display:none"><div id="sc">0</div><div id="sub"></div><div id="bar"><div id="fu"></div></div><div id="hpw"><span>HP</span><div id="hp"></div><b id="hpn">100</b></div></div>
+<div id="hud" style="display:none"><div id="sc">0</div><div id="sub"></div><div id="bar"><div id="fu"></div></div><div id="hpw"><span>HP</span><div id="hp"></div><b id="hpn">1500 / 1500 HP</b></div></div>
 <div id="scan"></div><div id="vig"></div><div id="big"></div><div id="pop"></div><div id="ui"></div><div id="tb"><button id="fx">FX</button><button id="mb">🎵</button><button id="pb">❚❚</button></div>
 <script type="importmap">{"imports":{"three":"./three.module.js","three/addons/":"./addons/"}}</script>
 <script type="module">
@@ -197,12 +197,12 @@ function spawn(z){const r=Math.random(),late=dist>350;
   g.position.set(px,py,pz);S.add(g);obs.push({kind:'pick',x:px,y:py,z1:pz,m:g})}
  return maxL}
 // ---- state
-let hp=100,hits=0,invT=0,sinceHit=99;let st='title',paused=false,best=+localStorage.getItem('rd_best')||0,P,dist,score,combo,hopped,flips,loops,ceilT,introT,nextZ,overT=0,shake=0,popT=0;
+const MAXHP=1500,TOPKMH=531,KMH=531/85;let hp=1500,hits=0,invT=0,sinceHit=99;let st='title',paused=false,best=+localStorage.getItem('rd_best')||0,P,dist,score,combo,hopped,flips,loops,ceilT,introT,nextZ,overT=0,shake=0,popT=0;
 const inp={thrust:false,left:false,right:false,steer:0};
-function reset(){hp=100;hits=0;invT=0;sinceHit=99;P={x:0,y:0,vx:0,vy:0,mode:'ground',pitch:0,roll:0,pT:0,rT:0,fuel:1,boostT:0,loop:null,ceil:null,bank:0};dist=0;score=0;combo=1;hopped=0;flips=0;loops=0;ceilT=0;introT=0;nextZ=-80;clearObs();ceils=[];
+function reset(){hp=MAXHP;hits=0;invT=0;sinceHit=99;P={x:0,y:0,vx:0,vy:0,mode:'ground',pitch:0,roll:0,pT:0,rT:0,fuel:1,boostT:0,loop:null,ceil:null,bank:0};dist=0;score=0;combo=1;hopped=0;flips=0;loops=0;ceilT=0;introT=0;nextZ=-80;clearObs();ceils=[];
  for(let i=0;i<RC.length;i++){RC[i].position.z=-i*RL+RL;RC[i].visible=true}}
 reset();
-function curSpeed(){if(st!=='play')return SHOW?0:14;const b=introT<.8?introT/.8*32:Math.min(85,32+dist*.012);return b*(P.boostT>0?1.55:1)}
+function curSpeed(){if(st!=='play')return SHOW?0:14;const b=introT<.8?introT/.8*32:Math.min(85,32+dist*.012);return Math.min(85,b*(P.boostT>0?1.55:1))}
 function pop(t,c='#fff'){const e=$('pop');e.textContent=t;e.style.color=c;e.style.opacity=1;popT=1}
 const qa=new THREE.Quaternion(),qb=new THREE.Quaternion(),XA=new THREE.Vector3(1,0,0),ZA=new THREE.Vector3(0,0,1);
 function trickQ(p,r,out){qa.setFromAxisAngle(ZA,r);qb.setFromAxisAngle(XA,p);return out.copy(qa).multiply(qb)}
@@ -253,7 +253,7 @@ function shot(){renderFrame();const c=document.createElement('canvas');c.width=R
  const a=document.createElement('a');a.download='roadster-'+score+'.png';a.href=c.toDataURL('image/png');a.click()}
 // ---- update
 for(let i=0;i<10;i++)$('hp').appendChild(document.createElement('i'));
-function hpHud(){const segs=$('hp').children,n=Math.ceil(hp/10),col=hp>60?'#00f0ff':hp>30?'#ff2bd6':'#ff2020';for(let i=0;i<10;i++){segs[i].style.background=i<n?col:'#2a0a33';segs[i].style.boxShadow=i<n?'0 0 6px '+col:'none'}$('hpn').textContent=Math.ceil(hp);$('hpn').style.color=col}
+function hpHud(){const segs=$('hp').children,f=hp/MAXHP,n=Math.ceil(f*10),col=f>.6?'#00f0ff':f>.3?'#ff2bd6':'#ff2020';for(let i=0;i<10;i++){segs[i].style.background=i<n?col:'#2a0a33';segs[i].style.boxShadow=i<n?'0 0 6px '+col:'none'}$('hpn').textContent=Math.ceil(hp)+' / '+MAXHP+' HP';$('hpn').style.color=col}
 function hurt(n,why,force){if(invT>0&&!force)return false;hp=Math.max(0,hp-n);hits++;combo=1;invT=1.5;sinceHit=0;shake=Math.max(shake,.7);noise(.3,.3,200);tone(160,.3,'square',.14,50);
  const w=$('hpw');w.classList.remove('hit');void w.offsetWidth;w.classList.add('hit');pop('-'+n+' HP','#ff2020');hpHud();if(hp<=0){over(why);return true}return false}
 function gapAt(z){for(const o of obs)if(o.kind==='gap'&&z<o.z0+2&&z>o.z1-2)return o;return null}
@@ -290,18 +290,18 @@ function update(dt){
    for(const o of obs){
     if(o.kind==='car'&&!o.dead){if(invT<=0&&Math.abs(P.x-o.x)<o.w/2+.85&&z-2.4<o.z0&&z+2.4>o.z1&&yc-.6<o.h&&yc+.6>0){o.dead=true;o.cl=true;for(let i=0;i<60;i++)emit(o.x,1+Math.random()*o.h,(o.z0+o.z1)/2,(Math.random()-.5)*14,Math.random()*9,(Math.random()-.5)*8,Math.random()<.5?FIREC:GOLD,1,1);o.fly={vx:Math.sign(o.x-P.x||1)*14,vy:9,r:(Math.random()-.5)*8};
  if(hurt(25,'Hit a '+(o.h>3?'truck':'vehicle')+'.'))return;P.mode='air';P.loop=null;P.vy=7;P.vx=Math.sign(P.x-o.x||1)*12;upright();P.spinV=14;continue}if(!o.cl&&z+2.4<o.z1){o.cl=true;if(Math.abs(P.x-o.x)<o.w/2+1.5){hopped++;score+=60*combo}}}
-    else if(o.kind==='pick'&&!o.got){if(Math.abs(P.x-o.x)<1.8&&Math.abs(z-o.z1)<2.6&&Math.abs(P.y+.6-o.y)<1.9){o.got=true;S.remove(o.m);hp=Math.min(100,hp+25);hpHud();pop('+25 HP REPAIR','#7cff6b');tone(660,.1,'triangle',.12);setTimeout(()=>tone(1320,.18,'triangle',.1),80);for(let i=0;i<30;i++)emit(o.x,o.y,o.z1,(Math.random()-.5)*8,(Math.random()-.5)*8,(Math.random()-.5)*8,CY,.6)}}
+    else if(o.kind==='pick'&&!o.got){if(Math.abs(P.x-o.x)<1.8&&Math.abs(z-o.z1)<2.6&&Math.abs(P.y+.6-o.y)<1.9){o.got=true;S.remove(o.m);hp=Math.min(MAXHP,hp+150);hpHud();pop('+150 HP REPAIR','#7cff6b');tone(660,.1,'triangle',.12);setTimeout(()=>tone(1320,.18,'triangle',.1),80);for(let i=0;i<30;i++)emit(o.x,o.y,o.z1,(Math.random()-.5)*8,(Math.random()-.5)*8,(Math.random()-.5)*8,CY,.6)}}
     else if((o.kind==='loop'||o.kind==='cramp')&&!o.done&&z<=o.z){o.done=true;if(P.mode==='ground'){P.mode='loop';P.loop={o,th:0,max:o.kind==='loop'?Math.PI*2:Math.PI};tone(300,.5,'sawtooth',.07,900)}}
    }
   }
   for(let i=obs.length-1;i>=0;i--){const o=obs[i],far=o.kind==='cramp'?o.deck.z1:o.kind==='loop'?o.z-o.R-o.k*6.3:o.z1;if(far>-dist+30){S.remove(o.m);obs.splice(i,1)}}
   ceils=ceils.filter(c=>c.z1<-dist+30);
-  while(nextZ>-dist-280){const len=spawn(nextZ);nextZ-=len+26+Math.random()*30+sp*.3+(introT<30?22:0)}
-  invT=Math.max(0,invT-dt);sinceHit+=dt;if(sinceHit>5&&hp<100){hp=Math.min(100,hp+dt);hpHud()}CAR.visible=invT>0?(Math.floor(invT*14)%2===0):true;
+  while(nextZ>-dist-280){const len=spawn(nextZ);nextZ-=len+26+Math.random()*30+sp*.6+(introT<30?22:0)}
+  invT=Math.max(0,invT-dt);sinceHit+=dt;if(sinceHit>5&&hp<MAXHP){hp=Math.min(MAXHP,hp+10*dt);hpHud()}CAR.visible=invT>0?(Math.floor(invT*14)%2===0):true;
   P.spinV=(P.spinV||0)*Math.pow(.05,dt);P.spinA=((P.spinA||0)+P.spinV*dt)*(P.spinV<.3?.85:1);
   for(const o of obs){if(o.fly){o.m.position.x+=o.fly.vx*dt;o.m.position.y+=o.fly.vy*dt;o.fly.vy-=25*dt;o.m.rotation.z+=o.fly.r*dt;if(o.m.position.y<-8)o.m.visible=false}if(o.kind==='pick'&&o.m){o.m.rotation.y+=dt*3;o.m.position.y=o.y+Math.sin(performance.now()/300)*.2}}
-  $('sc').textContent=Math.floor(score);$('sub').textContent=`BEST ${best} · ${Math.round(sp*2.6)} mph · x${combo}${P.mode==='ceil'?' · UPSIDE DOWN':''}`;$('fu').style.width=Math.max(0,P.fuel*100)+'%';$('fu').style.background=P.fuel>.15?'#5cf':'#f44';
-  $('big').textContent=introT<.8?'0-60: '+introT.toFixed(1)+'s':introT<2?'0-60: 0.8s 😤':'';
+  $('sc').textContent=Math.floor(score);$('sub').textContent=`BEST ${best} · ${Math.min(TOPKMH,Math.round(sp*KMH))} km/h · x${combo}${P.mode==='ceil'?' · UPSIDE DOWN':''}`;$('fu').style.width=Math.max(0,P.fuel*100)+'%';$('fu').style.background=P.fuel>.15?'#5cf':'#f44';
+  $('big').textContent=introT<.8?'0-100 km/h: '+introT.toFixed(1)+'s':introT<2?'0-100 km/h: 0.8s 😤':'';
  }
  if(st==='title'&&!SHOW)dist+=14*dt;
  // car transform
