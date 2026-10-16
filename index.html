@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>ROADSTER — fly, flip, drive upside down</title>
+<title>ROADSUCTION — fly, flip, drive upside down</title>
 <style>
 :root{--m:#ff2bd6;--c:#00f0ff;--y:#ffe600}
 html,body{margin:0;height:100%;background:#05030c;overflow:hidden;touch-action:none;font-family:"JetBrains Mono","Fira Code",ui-monospace,Menlo,Consolas,monospace;color:#e8f6ff;user-select:none;-webkit-user-select:none}
@@ -439,19 +439,19 @@ setTimeout(showTouch,0);
  hold('tB',()=>boost());hold('tD',()=>trick('p',-1));hold('tU',()=>trick('p',1));hold('tO',e=>{const r=$('tO').getBoundingClientRect();trick('r',e&&e.clientX>r.left+r.width/2?-1:1)});hold('tX',()=>{fireHeld=true},()=>{fireHeld=false})}
 addEventListener('contextmenu',e=>e.preventDefault());document.addEventListener('gesturestart',e=>e.preventDefault());document.addEventListener('touchmove',e=>{if(e.touches.length>1||e.target.closest&&e.target.closest('#tc,canvas'))e.preventDefault()},{passive:false});
 function title(){st='title';$('ui').className='';CAR.visible=true;fxReset();applySkin();P.spinA=0;P.spinV=0;upright();$('hud').style.display='none';for(const b of $('tb').children)b.style.display='none';
- $('ui').innerHTML=`<div class="p"><h1 class="gl" data-text="ROADSTER">ROADSTER</h1><div class="tag">// NEON SPRAWL EDITION //</div><p>Cold-gas thrusters. Suction fans. Drive the ceiling.</p><div id="htw">${howto()}</div><button id="go">LAUNCH 🚀</button><button class="s" id="shopb">🛒 SHOP</button><p class="k">Best: ${best}</p>${fxTitleInfo()}</div>`;$('go').onclick=e=>{e.stopPropagation();thrustOn()};$('shopb').onclick=e=>{e.stopPropagation();au();shopOpen()};wireHowto()}
+ $('ui').innerHTML=`<div class="p"><h1 class="gl" data-text="ROADSUCTION">ROADSUCTION</h1><div class="tag">// NEON SPRAWL EDITION //</div><p>Cold-gas thrusters. Suction fans. Drive the ceiling.</p><div id="htw">${howto()}</div><button id="go">LAUNCH 🚀</button><button class="s" id="shopb">🛒 SHOP</button><p class="k">Best: ${best}</p>${fxTitleInfo()}</div>`;$('go').onclick=e=>{e.stopPropagation();thrustOn()};$('shopb').onclick=e=>{e.stopPropagation();au();shopOpen()};wireHowto()}
 function start(){$('ui').className='';if(typeof TOD!=='undefined'){if(FTOD==null)TOD=.02;if(!FWX){WX.k='clear';WX.next=40}wInit=false}applyUpgrades();reset();fxStart();st='play';paused=false;$('ui').innerHTML='';$('hud').style.display='';hpHud();for(const b of $('tb').children)b.style.display='block';CAR.visible=true;CAM.position.set(P.x*.7,3.4,-dist+9.5);showTouch();tone(220,.6,'sawtooth',.08,880)}
 function over(why){if(st!=='play')return;setTimeout(showTouch,0);st='over';overT=performance.now();document.body.classList.add('glx');setTimeout(()=>document.body.classList.remove('glx'),650);shake=1.2;noise(.7,.35);tone(120,.7,'square',.15,30);CAR.visible=false;fxEnd();
  for(let i=0;i<180;i++)emit(P.x,P.y+.5,-dist,(Math.random()-.5)*18,Math.random()*12,(Math.random()-.5)*18,Math.random()<.5?FIREC:GOLD,1.3,1);
  score=Math.floor(score);const nb=score>best;if(nb){best=score;localStorage.setItem('rd_best',best)}for(const b of $('tb').children)b.style.display='none';
  setTimeout(()=>{$('ui').innerHTML=`<div class="p"><h1 class="gl" data-text="KNOCKED OUT">KNOCKED OUT</h1><p class="k">${why||''}</p><p style="font-size:32px;margin:6px">${score}</p><p>${nb?'🔥 NEW BEST!':'Best: '+best}</p><p class="k">Hits taken ${hits} · Hopped ${hopped} vehicles · ${flips} tricks · ${loops} loops · ${ceilT.toFixed(1)}s upside down · ${Math.floor(dist)} m</p>${fxOverInfo()}<button id="sh">SHARE</button><button class="s" id="ss">📸 SCREENSHOT</button><br><button id="ag">AGAIN</button><button class="s" id="shopb2">🛒 SHOP</button></div>`;
   $('sh').onclick=share;$('ss').onclick=shot;$('ag').onclick=e=>{e.stopPropagation();start()};$('shopb2').onclick=e=>{e.stopPropagation();shopOpen()}},700)}
-function shareText(){return `I flipped over ${hopped} trucks in ROADSTER 🚀 score ${score} — beat me ${location.protocol.startsWith('http')?location.href.split('?')[0]:''}`.trim()}
-async function share(){const t=shareText();try{if(navigator.share){await navigator.share({title:'ROADSTER',text:t});return}}catch(e){if(e.name==='AbortError')return}
+function shareText(){return `I flipped over ${hopped} trucks in ROADSUCTION 🚀 score ${score} — beat me ${location.protocol.startsWith('http')?location.href.split('?')[0]:''}`.trim()}
+async function share(){const t=shareText();try{if(navigator.share){await navigator.share({title:'ROADSUCTION',text:t});return}}catch(e){if(e.name==='AbortError')return}
  try{await navigator.clipboard.writeText(t);alert('Copied!\n\n'+t)}catch(e){prompt('Copy this:',t)}}
 function shot(){renderFrame();const c=document.createElement('canvas');c.width=R.domElement.width;c.height=R.domElement.height;const x=c.getContext('2d');x.drawImage(R.domElement,0,0);
- x.fillStyle='#000a';x.fillRect(0,0,c.width,90*PR);x.fillStyle='#00f0ff';x.font=`900 ${40*PR}px system-ui`;x.fillText('ROADSTER  '+score,20*PR,58*PR);
- const a=document.createElement('a');a.download='roadster-'+score+'.png';a.href=c.toDataURL('image/png');a.click()}
+ x.fillStyle='#000a';x.fillRect(0,0,c.width,90*PR);x.fillStyle='#00f0ff';x.font=`900 ${40*PR}px system-ui`;x.fillText('ROADSUCTION  '+score,20*PR,58*PR);
+ const a=document.createElement('a');a.download='roadsuction-'+score+'.png';a.href=c.toDataURL('image/png');a.click()}
 // ===================== v4 FEATURES: economy · pickups · weapons · enemies · bosses · shop · missions =====================
 var SAVE=(function(){try{return JSON.parse(localStorage.getItem('rd_save'))||{}}catch(e){return {}}})();
 SAVE.cr=+SAVE.cr||0;SAVE.skins=SAVE.skins||['gunmetal'];SAVE.skin=SAVE.skin||'gunmetal';SAVE.weapons=SAVE.weapons||['pulse'];SAVE.weapon=SAVE.weapon||'pulse';SAVE.up=Object.assign({hp:0,thrust:0,magnet:0,dmg:0},SAVE.up||{});
