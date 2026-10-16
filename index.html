@@ -190,11 +190,11 @@ function cyberTick(dt){const t=performance.now()/1000,cz=-dist;
  ugM.opacity=0;}
 // ---- v6 realistic dynamic world: environments, weather, day/night
 const ENVS=[
+ {id:'city',n:'City',i:'🏙️',g:0x66696b,sh:0x8a8a88,m:0x6a7078,cap:0,props:['bld','bld','bld','lamp']},
  {id:'country',n:'Countryside',i:'🌾',g:0x5d8a3c,sh:0x7a7466,m:0x5f7356,cap:0,props:['tree','tree','bush','house','tree']},
  {id:'desert',n:'Desert',i:'🏜️',g:0xc9a46a,sh:0xb08a58,m:0xa8744a,cap:0,props:['cactus','rock','cactus','rock','bush0']},
  {id:'coast',n:'Coastal Highway',i:'🌊',g:0xd9c99c,sh:0xb8ab88,m:0x6f7d6a,cap:0,props:['palm','palm','rock','house']},
- {id:'snow',n:'Snowy Mountains',i:'🏔️',g:0xe9eef2,sh:0xc0c5ca,m:0x7d858f,cap:1,props:['pine','pine','pine','rock']},
- {id:'city',n:'City',i:'🏙️',g:0x66696b,sh:0x8a8a88,m:0x6a7078,cap:0,props:['bld','bld','bld','lamp']}];
+ {id:'snow',n:'Snowy Mountains',i:'🏔️',g:0xe9eef2,sh:0xc0c5ca,m:0x7d858f,cap:1,props:['pine','pine','pine','rock']}];
 const ENVLEN=1700,FENV=ENVS.findIndex(e=>e.id===Q.get('env'));
 const envIdx=d=>FENV>=0?FENV:Math.floor(Math.max(0,d)/ENVLEN)%ENVS.length;
 const SM=(c,o={})=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.9,metalness:0},o));
@@ -235,20 +235,20 @@ function ptexW(){const c=document.createElement('canvas');c.width=c.height=32;co
 // weather + time state
 const WXT={clear:{n:'Clear',i:'☀️',rain:0,snow:0,cloud:.15,fog:0},cloudy:{n:'Cloudy',i:'☁️',rain:0,snow:0,cloud:.85,fog:.15},rain:{n:'Rain',i:'🌧️',rain:1,snow:0,cloud:1,fog:.4},fog:{n:'Fog',i:'🌫️',rain:0,snow:0,cloud:.7,fog:1},snow:{n:'Snow',i:'🌨️',rain:0,snow:1,cloud:.9,fog:.45}};
 const FWX=WXT[Q.get('weather')]?Q.get('weather'):null,TODS={night:0,dawn:.27,morning:.36,day:.5,sunset:.73,dusk:.77},FTOD=Q.has('time')?(TODS[Q.get('time')]??(+Q.get('time')||.5)):null;
-const WX={k:FWX||'clear',rain:0,snow:0,cloud:.15,fog:0,next:40};let TOD=FTOD??.36,wInit=false,envCur=0,hudW=0,shadowSet=false;
+const WX={k:FWX||'clear',rain:0,snow:0,cloud:.15,fog:0,next:40};let TOD=FTOD??.02,wInit=false,envCur=0,hudW=0,shadowSet=false;
 const EC={g:new THREE.Color(),sh:new THREE.Color(),m:new THREE.Color(),cap:0,water:0};
 const C_=(h)=>new THREE.Color(h),SKY_DAY=[C_(0x4a8fd8),C_(0xbcd8ee)],SKY_SET=[C_(0x3a4f80),C_(0xf09a5a)],SKY_NIGHT=[C_(0x03060d),C_(0x111a2a)],GREY=[C_(0x6e7680),C_(0x9aa2aa)];
 const _t1=new THREE.Color(),_t2=new THREE.Color(),_sd=new THREE.Vector3();
 let HEAD=null;
 function pickWeather(){const E=ENVS[envIdx(dist)].id,opts=E==='snow'?['snow','snow','cloudy','clear','fog']:E==='desert'?['clear','clear','cloudy','fog']:['clear','clear','cloudy','rain','rain','fog'];let k;do k=opts[Math.random()*opts.length|0];while(k===WX.k&&Math.random()<.7);return k}
 function worldTick(dt){const d=dist||0,ap=wInit?1-Math.exp(-dt*.5):1,ap2=wInit?1-Math.exp(-dt*.35):1;
- if(!shadowSet&&typeof BODY!=='undefined'){shadowSet=true;BODY.traverse(o=>{if(o.isMesh)o.castShadow=true});HEAD=new THREE.SpotLight(0xfff2dd,0,70,.42,.5,1.2);HEAD.position.set(0,.6,-2.4);HEAD.target.position.set(0,0,-20);CAR.add(HEAD,HEAD.target)}
+ if(!shadowSet&&typeof BODY!=='undefined'){shadowSet=true;BODY.traverse(o=>{if(o.isMesh)o.castShadow=true});HEAD=new THREE.SpotLight(0xfff2dd,0,55,.3,.6,1.4);HEAD.position.set(0,.6,-2.4);HEAD.target.position.set(0,0,-20);CAR.add(HEAD,HEAD.target)}
  // environment
  const ei=envIdx(d),E=ENVS[ei];if(ei!==envCur&&wInit&&st==='play'){fxAnn&&fxAnn('ENTERING '+E.n.toUpperCase(),'#ffffff')}envCur=ei;
  EC.g.lerp(_t1.set(E.g),ap);EC.sh.lerp(_t1.set(E.sh),ap);EC.m.lerp(_t1.set(E.m),ap);EC.cap+=((E.cap?1:0)-EC.cap)*ap;EC.water+=((E.water?1:0)-EC.water)*ap;
  // weather
  if(!FWX&&st==='play'){WX.next-=dt;if(WX.next<=0){WX.k=pickWeather();WX.next=35+Math.random()*25}}else if(FWX)WX.k=FWX;
- if(!FWX&&WX.k==='snow'&&E.id!=='snow'&&E.id!=='city'&&envIdx(d+250)!==3)WX.k='rain';if(!FWX&&WX.k==='rain'&&E.id==='desert')WX.k='cloudy';if(!FWX&&WX.k==='rain'&&E.id==='snow')WX.k='snow';
+ if(!FWX&&WX.k==='snow'&&E.id!=='snow'&&E.id!=='city'&&ENVS[envIdx(d+250)].id!=='snow')WX.k='rain';if(!FWX&&WX.k==='rain'&&E.id==='desert')WX.k='cloudy';if(!FWX&&WX.k==='rain'&&E.id==='snow')WX.k='snow';
  const W=WXT[WX.k];for(const q of['rain','snow','cloud','fog'])WX[q]+=(W[q]-WX[q])*ap2;
  // time of day (full cycle ~4 min of play)
  if(FTOD==null)TOD=(TOD+dt/(st==='play'?240:600))%1;
@@ -267,8 +267,8 @@ function worldTick(dt){const d=dist||0,ap=wInit?1-Math.exp(-dt*.5):1,ap2=wInit?1
  ground.material.color.copy(EC.g);shM.color.copy(EC.sh);mtnM.color.copy(EC.m);for(const m of MTN)m.userData.cap.visible=EC.cap>.5||m.userData.h>110;waterM.opacity=EC.water;WATER.visible=EC.water>.01;
  roadM.roughness=.92-.5*WX.rain;roadM.envMapIntensity=.15+.6*WX.rain;roadM.color.setScalar(1).set(0x3a3c40).multiplyScalar(1-WX.rain*.35);ground.material.color.lerp(_t1.set(0xf0f3f6),WX.snow*.5);
  CLM.opacity=.25+WX.cloud*.6;CLM.color.setScalar(.35+.65*gb).lerp(_t1.set(0x777e88),WX.rain*.6);for(const c of CLOUDS)c.position.x+=dt*3;
- const nl=Math.max(night,WX.fog*.25,WX.rain*.35*(1-day*.5));for(const m of BMAT)m.emissiveIntensity=night*.9;PMt.bulb.emissiveIntensity=night*2;
- if(HEAD)HEAD.intensity=nl*60;if(FLB)FLB.material.emissiveIntensity=.6+nl*4;
+ const nl=Math.max(night,WX.fog*.25,WX.rain*.35*(1-day*.5));for(const m of BMAT)m.emissiveIntensity=night*.9;for(const m of [...BMAT,ground.material,shM,railM,mtnM,PMt.pole,PMt.wall,PMt.rock,dashM,edgeM])m.envMapIntensity=.08+.92*gb;PMt.bulb.emissiveIntensity=night*2;
+ if(HEAD)HEAD.intensity=nl*22;if(FLB)FLB.material.emissiveIntensity=.6+nl*4;
  if(typeof paint!=='undefined'){paint.envMapIntensity=.25+1.15*gb;glassM.envMapIntensity=.4+1.6*gb}
  SKY.position.copy(CAM.position);
  // props recycle
@@ -440,7 +440,7 @@ setTimeout(showTouch,0);
 addEventListener('contextmenu',e=>e.preventDefault());document.addEventListener('gesturestart',e=>e.preventDefault());document.addEventListener('touchmove',e=>{if(e.touches.length>1||e.target.closest&&e.target.closest('#tc,canvas'))e.preventDefault()},{passive:false});
 function title(){st='title';$('ui').className='';CAR.visible=true;fxReset();applySkin();P.spinA=0;P.spinV=0;upright();$('hud').style.display='none';for(const b of $('tb').children)b.style.display='none';
  $('ui').innerHTML=`<div class="p"><h1 class="gl" data-text="ROADSTER">ROADSTER</h1><div class="tag">// NEON SPRAWL EDITION //</div><p>Cold-gas thrusters. Suction fans. Drive the ceiling.</p><div id="htw">${howto()}</div><button id="go">LAUNCH 🚀</button><button class="s" id="shopb">🛒 SHOP</button><p class="k">Best: ${best}</p>${fxTitleInfo()}</div>`;$('go').onclick=e=>{e.stopPropagation();thrustOn()};$('shopb').onclick=e=>{e.stopPropagation();au();shopOpen()};wireHowto()}
-function start(){$('ui').className='';applyUpgrades();reset();fxStart();st='play';paused=false;$('ui').innerHTML='';$('hud').style.display='';hpHud();for(const b of $('tb').children)b.style.display='block';CAR.visible=true;CAM.position.set(P.x*.7,3.4,-dist+9.5);showTouch();tone(220,.6,'sawtooth',.08,880)}
+function start(){$('ui').className='';if(typeof TOD!=='undefined'){if(FTOD==null)TOD=.02;if(!FWX){WX.k='clear';WX.next=40}wInit=false}applyUpgrades();reset();fxStart();st='play';paused=false;$('ui').innerHTML='';$('hud').style.display='';hpHud();for(const b of $('tb').children)b.style.display='block';CAR.visible=true;CAM.position.set(P.x*.7,3.4,-dist+9.5);showTouch();tone(220,.6,'sawtooth',.08,880)}
 function over(why){if(st!=='play')return;setTimeout(showTouch,0);st='over';overT=performance.now();document.body.classList.add('glx');setTimeout(()=>document.body.classList.remove('glx'),650);shake=1.2;noise(.7,.35);tone(120,.7,'square',.15,30);CAR.visible=false;fxEnd();
  for(let i=0;i<180;i++)emit(P.x,P.y+.5,-dist,(Math.random()-.5)*18,Math.random()*12,(Math.random()-.5)*18,Math.random()<.5?FIREC:GOLD,1.3,1);
  score=Math.floor(score);const nb=score>best;if(nb){best=score;localStorage.setItem('rd_best',best)}for(const b of $('tb').children)b.style.display='none';
