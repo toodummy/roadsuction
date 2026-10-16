@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>ROADSTER — fly, flip, drive upside down</title>
 <style>
 :root{--m:#ff2bd6;--c:#00f0ff;--y:#ffe600}
@@ -7,7 +7,7 @@ html,body{margin:0;height:100%;background:#05030c;overflow:hidden;touch-action:n
 canvas{display:block}
 #scan{position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,#0000 0 2px,#0003 2px 3px);mix-blend-mode:multiply;z-index:5}
 #vig{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,#0000 55%,#05001aaa 100%);z-index:4}
-#hud{position:fixed;left:14px;top:12px;pointer-events:none;padding:8px 14px 10px;background:linear-gradient(90deg,#14002acc,#0000);border-left:3px solid var(--m);clip-path:polygon(0 0,100% 0,92% 100%,0 100%);z-index:6}
+#hud{position:fixed;left:14px;top:12px;pointer-events:none;padding:8px 14px 10px;background:linear-gradient(90deg,#14002acc,#0000);border-left:3px solid var(--m);z-index:6}
 #sc{font:800 30px inherit;color:var(--c);text-shadow:2px 0 var(--m),-2px 0 var(--c),0 0 12px var(--c)}#sub{font-size:12px;letter-spacing:1px;color:#ffd6f6}
 #bar{width:170px;height:7px;background:#2a0a33;margin-top:6px;clip-path:polygon(0 0,100% 0,96% 100%,0 100%)}#fu{height:100%;background:linear-gradient(90deg,var(--m),var(--c));width:100%;box-shadow:0 0 10px var(--c)}
 #big{position:fixed;top:22%;width:100%;text-align:center;font-weight:900;font-size:42px;color:var(--y);text-shadow:3px 0 var(--m),-3px 0 var(--c),0 0 20px var(--y);pointer-events:none;z-index:6}
@@ -31,9 +31,34 @@ body.glx canvas{animation:gx .6s steps(8)}@keyframes gx{0%{filter:hue-rotate(0) 
 #hp{display:flex;gap:2px;width:170px;height:10px;transform:skewX(-20deg)}#hp i{flex:1;background:#2a0a33;transition:background .2s}
 #hpn{font-size:12px;color:var(--c);min-width:110px;white-space:nowrap}
 #hpw.hit{animation:hh .45s steps(5)}@keyframes hh{0%{transform:translate(6px,0);filter:invert(1)}40%{transform:translate(-6px,2px);filter:hue-rotate(120deg)}80%{transform:translate(3px,-1px)}100%{transform:none;filter:none}}
+html,body{-webkit-touch-callout:none;overscroll-behavior:none}
+.p{max-height:calc(100vh - 24px);overflow:auto}
+.ht{margin:12px auto 4px;max-width:620px;text-align:left;border:1px solid #ff2bd6aa;background:#0a0018cc;clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);padding:10px 14px 12px}
+.ht h3{margin:0 0 8px;font-size:14px;letter-spacing:4px;color:var(--y);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px}
+.tabs button{font-size:11px;padding:5px 10px;margin:0 0 0 4px;background:#2a0a33;box-shadow:none}.tabs button.on{background:var(--c);color:#001;box-shadow:0 0 10px var(--c)}
+.ht ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:5px 14px;font-size:12.5px}
+.ht li{display:flex;align-items:center;gap:6px;color:#d8f4ff}
+kbd{display:inline-block;min-width:18px;padding:2px 6px;border:1px solid var(--c);border-bottom-width:3px;border-radius:3px;background:#001a24;color:var(--c);font:700 11px inherit;text-align:center;box-shadow:0 0 6px #00f0ff55}
+kbd.m{border-color:var(--m);color:var(--m);background:#1a0020;box-shadow:0 0 6px #ff2bd655}
+.goal{margin-top:9px;font-size:12px;line-height:1.6;color:#ffd6f6;border-top:1px dashed #ff2bd666;padding-top:7px}.goal b{color:#7cff6b}
+@media (max-width:560px){#hp{width:96px}#bar{width:120px}#hud{padding-right:26px}.ht ul{grid-template-columns:1fr}h1.gl{font-size:38px;letter-spacing:6px}.p{padding:16px 14px}}
+#tc{position:fixed;inset:0;pointer-events:none;z-index:9;display:none}
+#tc .tb{position:absolute;pointer-events:auto;touch-action:none;-webkit-user-select:none;user-select:none;display:flex;align-items:center;justify-content:center;font:800 14px inherit;letter-spacing:1px;color:#fff;
+ background:#00f0ff22;border:2px solid #00f0ffaa;box-shadow:0 0 14px #00f0ff55,inset 0 0 14px #00f0ff33;border-radius:50%;text-shadow:0 0 6px var(--c)}
+#tc .tb.m{background:#ff2bd622;border-color:#ff2bd6bb;box-shadow:0 0 14px #ff2bd655,inset 0 0 14px #ff2bd633;text-shadow:0 0 6px var(--m)}
+#tc .tb.dn{transform:scale(.92);background:#00f0ff66}#tc .tb.m.dn{background:#ff2bd666}
+#tL{left:calc(env(safe-area-inset-left) + 16px);bottom:calc(env(safe-area-inset-bottom) + 22px);width:84px;height:84px;font-size:30px!important}
+#tR{left:calc(env(safe-area-inset-left) + 112px);bottom:calc(env(safe-area-inset-bottom) + 22px);width:84px;height:84px;font-size:30px!important}
+#tF{right:calc(env(safe-area-inset-right) + 18px);bottom:calc(env(safe-area-inset-bottom) + 20px);width:118px;height:118px;font-size:20px!important}
+#tB{right:calc(env(safe-area-inset-right) + 146px);bottom:calc(env(safe-area-inset-bottom) + 18px);width:66px;height:66px;font-size:11px!important}
+#tD{right:calc(env(safe-area-inset-right) + 146px);bottom:calc(env(safe-area-inset-bottom) + 94px);width:62px;height:62px;font-size:11px!important}
+#tU{right:calc(env(safe-area-inset-right) + 74px);bottom:calc(env(safe-area-inset-bottom) + 148px);width:62px;height:62px;font-size:11px!important}
+#tO{right:calc(env(safe-area-inset-right) + 6px);bottom:calc(env(safe-area-inset-bottom) + 148px);width:62px;height:62px;font-size:11px!important}
+@media (orientation:portrait){#tL,#tR{width:72px;height:72px}#tR{left:calc(env(safe-area-inset-left) + 98px)}#tF{width:104px;height:104px}#tB{right:calc(env(safe-area-inset-right) + 130px)}#tD{right:calc(env(safe-area-inset-right) + 130px);bottom:calc(env(safe-area-inset-bottom) + 92px)}#tU{bottom:calc(env(safe-area-inset-bottom) + 134px);right:calc(env(safe-area-inset-right) + 66px)}#tO{bottom:calc(env(safe-area-inset-bottom) + 134px)}}
+#hud{padding-right:44px!important;left:calc(env(safe-area-inset-left) + 14px);top:calc(env(safe-area-inset-top) + 12px)}#tb{right:calc(env(safe-area-inset-right) + 10px);top:calc(env(safe-area-inset-top) + 10px)}
 </style></head><body>
 <div id="hud" style="display:none"><div id="sc">0</div><div id="sub"></div><div id="bar"><div id="fu"></div></div><div id="hpw"><span>HP</span><div id="hp"></div><b id="hpn">1500 / 1500 HP</b></div></div>
-<div id="scan"></div><div id="vig"></div><div id="big"></div><div id="pop"></div><div id="ui"></div><div id="tb"><button id="fx">FX</button><button id="mb">🎵</button><button id="pb">❚❚</button></div>
+<div id="scan"></div><div id="vig"></div><div id="big"></div><div id="pop"></div><div id="ui"></div><div id="tc"><div class="tb" id="tL">◀</div><div class="tb" id="tR">▶</div><div class="tb m" id="tF">FLY</div><div class="tb" id="tB">BOOST</div><div class="tb m" id="tD">FLIP▼</div><div class="tb m" id="tU">FLIP▲</div><div class="tb" id="tO">ROLL</div></div><div id="tb"><button id="fx">FX</button><button id="mb">🎵</button><button id="pb">❚❚</button></div>
 <script type="importmap">{"imports":{"three":"./three.module.js","three/addons/":"./addons/"}}</script>
 <script type="module">
 import * as THREE from 'three';
@@ -235,12 +260,29 @@ function fxBtn(){$('fx').style.opacity=bloomOn?1:.4}fxBtn();function toggleFx(){
 $('pb').onclick=e=>{e.stopPropagation();togglePause()};$('mb').onclick=e=>{e.stopPropagation();toggleMusic()};
 function toggleMusic(){musicOn=!musicOn;localStorage.setItem('rd_music',musicOn?'1':'0');$('mb').style.opacity=musicOn?1:.4}$('mb').style.opacity=musicOn?1:.4;
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&st==='play'&&!paused)togglePause()});
-function togglePause(){if(st!=='play')return;paused=!paused;$('ui').innerHTML=paused?'<div class="p"><h1 class="gl" data-text="PAUSED">PAUSED</h1><button id="rb">RESUME</button></div>':'';if(paused)$('rb').onclick=togglePause}
+function pauseMenu(){$('ui').innerHTML=`<div class="p"><h1 class="gl" data-text="PAUSED">PAUSED</h1><br><button id="rb">RESUME</button><button class="s" id="cb">CONTROLS</button>${IS_TOUCH?`<button class="s" id="tt">TOUCH BUTTONS: ${touchUI?'ON':'OFF'}</button>`:''}<div id="htw"></div></div>`;
+ $('rb').onclick=e=>{e.stopPropagation();togglePause()};$('cb').onclick=e=>{e.stopPropagation();const w=$('htw');w.innerHTML=w.innerHTML?'':howto();wireHowto()};
+ if($('tt'))$('tt').onclick=e=>{e.stopPropagation();touchUI=!touchUI;localStorage.setItem('rd_touchui',touchUI?'1':'0');pauseMenu()}}
+function togglePause(){if(st!=='play')return;paused=!paused;if(paused){inp.left=inp.right=false;thrustOff();pauseMenu()}else $('ui').innerHTML='';showTouch()}
 // ---- screens
+const IS_TOUCH=Q.has('touch')||matchMedia('(pointer:coarse)').matches||('ontouchstart' in window);let htMode=IS_TOUCH?'touch':'kbd',touchUI=IS_TOUCH&&localStorage.getItem('rd_touchui')!=='0';
+function howto(){const K=(...a)=>a.map(x=>`<kbd>${x}</kbd>`).join(''),T=(...a)=>a.map(x=>`<kbd class="m">${x}</kbd>`).join('');
+ const kb=[[K('SPACE'),'Fly · hold = hover'],[K('A','D'),'Strafe left / right'],[K('S'),'Front-flip (in air)'],[K('W'),'Backflip (in air)'],[K('Q','E'),'Barrel roll'],[K('SHIFT'),'Boost'],[K('P'),'Pause'],[K('M')+K('B'),'Music · Bloom FX']];
+ const tc=[[T('FLY'),'Hold = thrust / hover'],[T('◀','▶'),'Hold to strafe'],[T('FLIP▼'),'Front-flip'],[T('FLIP▲'),'Backflip'],[T('ROLL'),'Barrel roll'],[T('BOOST'),'Speed burst'],[T('drag'),'No buttons? drag to steer'],[T('flick'),'Flick ↑↓ = flips · 2-tap = boost']];
+ return `<div class="ht"><h3>▚ HOW TO DRIVE <span class="tabs"><button data-m="kbd" class="${htMode==='kbd'?'on':''}">⌨ KEYBOARD</button><button data-m="touch" class="${htMode==='touch'?'on':''}">☝ TOUCH</button></span></h3><ul>${(htMode==='kbd'?kb:tc).map(([k,t])=>`<li>${k}<span>${t}</span></li>`).join('')}</ul>
+ <div class="goal">▸ Fly over traffic · flip &amp; ride loops for <b style="color:var(--y)">COMBO</b><br>▸ Grab <b>green wrench orbs</b> to repair (+200)<br>▸ <b style="color:var(--c)">1500 HP</b> · top speed <b style="color:var(--m)">531 km/h</b> · land wheels-down!<br>▸ Under a ceiling? Half-flip to stick upside down.</div></div>`}
+function wireHowto(){document.querySelectorAll('.tabs button').forEach(b=>b.onclick=e=>{e.stopPropagation();htMode=b.dataset.m;const w=$('htw');if(w){w.innerHTML=howto();wireHowto()}})}
+function showTouch(){$('tc').style.display=(touchUI&&st==='play'&&!paused)?'block':'none'}
+// touch buttons (multitouch, isolated from canvas gestures)
+{const hold=(id,dn,up)=>{const el=$(id);const d=e=>{e.preventDefault();e.stopPropagation();au();try{el.setPointerCapture(e.pointerId)}catch(_){}el.classList.add('dn');dn()};const u=e=>{e.preventDefault();e.stopPropagation();if(!el.classList.contains('dn'))return;el.classList.remove('dn');up&&up()};
+  el.addEventListener('pointerdown',d);el.addEventListener('pointerup',u);el.addEventListener('pointercancel',u);el.addEventListener('lostpointercapture',u);el.addEventListener('contextmenu',e=>e.preventDefault())};
+ hold('tL',()=>inp.left=true,()=>inp.left=false);hold('tR',()=>inp.right=true,()=>inp.right=false);hold('tF',thrustOn,thrustOff);
+ hold('tB',()=>boost());hold('tD',()=>trick('p',-1));hold('tU',()=>trick('p',1));hold('tO',()=>trick('r',1))}
+addEventListener('contextmenu',e=>e.preventDefault());document.addEventListener('gesturestart',e=>e.preventDefault());document.addEventListener('touchmove',e=>{if(e.touches.length>1||e.target.closest&&e.target.closest('#tc,canvas'))e.preventDefault()},{passive:false});
 function title(){st='title';$('hud').style.display='none';for(const b of $('tb').children)b.style.display='none';
- $('ui').innerHTML=`<div class="p"><h1 class="gl" data-text="ROADSTER">ROADSTER</h1><div class="tag">// NEON SPRAWL EDITION //</div><p>Cold-gas thrusters. Suction fans. Drive the ceiling.</p><p class="k"><b>SPACE / TAP-HOLD</b> fly (hold = hover) · <b>A D / drag</b> strafe<br><b>S / flick ↓</b> front-flip · <b>W / flick ↑</b> backflip · <b>Q E / 2nd finger</b> barrel roll<br><b>SHIFT / double-tap</b> boost · land wheels-down! · P pause · M music · B bloom FX<br>Under a ceiling? Half-flip to stick upside down.</p><button id="go">LAUNCH 🚀</button><p class="k">Best: ${best}</p></div>`;$('go').onclick=e=>{e.stopPropagation();thrustOn()}}
-function start(){reset();st='play';paused=false;$('ui').innerHTML='';$('hud').style.display='';hpHud();for(const b of $('tb').children)b.style.display='block';CAR.visible=true;CAM.position.set(P.x*.7,3.4,-dist+9.5);tone(220,.6,'sawtooth',.08,880)}
-function over(why){if(st!=='play')return;st='over';overT=performance.now();document.body.classList.add('glx');setTimeout(()=>document.body.classList.remove('glx'),650);shake=1.2;noise(.7,.35);tone(120,.7,'square',.15,30);CAR.visible=false;
+ $('ui').innerHTML=`<div class="p"><h1 class="gl" data-text="ROADSTER">ROADSTER</h1><div class="tag">// NEON SPRAWL EDITION //</div><p>Cold-gas thrusters. Suction fans. Drive the ceiling.</p><div id="htw">${howto()}</div><button id="go">LAUNCH 🚀</button><p class="k">Best: ${best}</p></div>`;$('go').onclick=e=>{e.stopPropagation();thrustOn()};wireHowto()}
+function start(){reset();st='play';paused=false;$('ui').innerHTML='';$('hud').style.display='';hpHud();for(const b of $('tb').children)b.style.display='block';CAR.visible=true;CAM.position.set(P.x*.7,3.4,-dist+9.5);showTouch();tone(220,.6,'sawtooth',.08,880)}
+function over(why){if(st!=='play')return;setTimeout(showTouch,0);st='over';overT=performance.now();document.body.classList.add('glx');setTimeout(()=>document.body.classList.remove('glx'),650);shake=1.2;noise(.7,.35);tone(120,.7,'square',.15,30);CAR.visible=false;
  for(let i=0;i<180;i++)emit(P.x,P.y+.5,-dist,(Math.random()-.5)*18,Math.random()*12,(Math.random()-.5)*18,Math.random()<.5?FIREC:GOLD,1.3,1);
  score=Math.floor(score);const nb=score>best;if(nb){best=score;localStorage.setItem('rd_best',best)}for(const b of $('tb').children)b.style.display='none';
  setTimeout(()=>{$('ui').innerHTML=`<div class="p"><h1 class="gl" data-text="WRECKED">WRECKED</h1><p class="k">${why||''}</p><p style="font-size:32px;margin:6px">${score}</p><p>${nb?'🔥 NEW BEST!':'Best: '+best}</p><p class="k">Hits taken ${hits} · Hopped ${hopped} vehicles · ${flips} tricks · ${loops} loops · ${ceilT.toFixed(1)}s upside down · ${Math.floor(dist)} m</p><button id="sh">SHARE</button><button class="s" id="ss">📸 SCREENSHOT</button><br><button id="ag">AGAIN</button></div>`;
@@ -254,7 +296,7 @@ function shot(){renderFrame();const c=document.createElement('canvas');c.width=R
 // ---- update
 for(let i=0;i<10;i++)$('hp').appendChild(document.createElement('i'));
 function hpHud(){const segs=$('hp').children,f=hp/MAXHP,n=Math.ceil(f*10),col=f>.6?'#00f0ff':f>.3?'#ff2bd6':'#ff2020';for(let i=0;i<10;i++){segs[i].style.background=i<n?col:'#2a0a33';segs[i].style.boxShadow=i<n?'0 0 6px '+col:'none'}$('hpn').textContent=Math.ceil(hp)+' / '+MAXHP+' HP';$('hpn').style.color=col}
-function hurt(n,why,force,label){n=Math.round(Math.min(DMG.cap,n));if(invT>0&&!force)return false;hp=Math.max(0,hp-n);hits++;combo=1;invT=1.5;sinceHit=0;shake=Math.max(shake,.25+n/450);noise(.3,.3,200);tone(160,.3,'square',.14,50);
+function hurt(n,why,force,label){n=Math.round(Math.min(DMG.cap,n));if(invT>0&&!force)return false;hp=Math.max(0,hp-n);hits++;try{navigator.vibrate&&navigator.vibrate(Math.min(220,40+n/3|0))}catch(_){}combo=1;invT=1.5;sinceHit=0;shake=Math.max(shake,.25+n/450);noise(.3,.3,200);tone(160,.3,'square',.14,50);
  const w=$('hpw');w.classList.remove('hit');void w.offsetWidth;w.classList.add('hit');pop('-'+n+' HP'+(label?'  '+label:''),'#ff2020');hpHud();if(hp<=0){over(why);return true}return false}
 const DMG={robotaxi:240,van:240,pickup:330,truck:460,land:180,gap:400,cap:600};
 const rnd=()=>.85+Math.random()*.3,spF=()=>Math.max(.5,Math.min(1.2,curSpeed()/62));
