@@ -145,7 +145,7 @@ function renderFrame(){if(bloomOn){comp.render()}else R.render(S,CAM)}
  pm(0xffffff,1.4,30,6,0,14,0,0,Math.PI/2);pm(0xbcd4ec,1,20,8,-15,4,0,Math.PI/2);pm(0xbcd4ec,1,20,8,15,4,0,-Math.PI/2);pm(0xfff2dd,1.3,30,5,0,5,-15);pm(0xdde8f2,1,30,8,0,4,15,Math.PI);pm(0x555048,1,40,40,0,-6,0,0,Math.PI/2);
  const pg=new THREE.PMREMGenerator(R);S.environment=pg.fromScene(es,.03).texture}
 const HL=new THREE.HemisphereLight(0xcfe6ff,0x5a5040,.9);S.add(HL);const DL=new THREE.DirectionalLight(0xfff1dd,2.2);DL.position.set(-6,12,-4);DL.castShadow=true;DL.shadow.mapSize.set(1024,1024);const SC=DL.shadow.camera;SC.left=-14;SC.right=14;SC.top=14;SC.bottom=-14;SC.near=1;SC.far=80;DL.shadow.bias=-.0005;S.add(DL);S.add(DL.target);
-const M=(c,e=0,ei=1)=>new THREE.MeshStandardMaterial({color:(c===0&&e)?e:c,emissive:e,emissiveIntensity:Math.min(.35,ei*.12),roughness:.6,metalness:.15});
+const MC={},MLIT=[];const M=(c,e=0,ei=1)=>{if(!e)return new THREE.MeshStandardMaterial({color:c,roughness:.6,metalness:.15});const b=Math.min(.35,ei*.12),m=new THREE.MeshStandardMaterial({color:(c===0)?e:c,emissive:e,emissiveIntensity:b,roughness:.6,metalness:.15});m.userData.b=b;return m};
 const box=(w,h,d,m)=>new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);
 // ---- world bits that follow the car (far)
 const FAR=new THREE.Group();S.add(FAR);
@@ -227,6 +227,8 @@ function propSet(p,z){const d=-z,E=ENVS[envIdx(d)],k=E.props[Math.random()*E.pro
  if(k==='lamp')o.children[1].position.x=o.children[2].position.x=1.1;p.g.position.set(x,0,z);p.g.rotation.y=k==='lamp'?(x>0?Math.PI:0):k==='bld'?0:Math.random()*6.28;if(k!=='bld'&&k!=='lamp')p.g.scale.setScalar(.75+Math.random()*.6);else p.g.scale.setScalar(1);p.k=k}
 for(let i=0;i<NPROP;i++){const g=new THREE.Group(),v={};for(const n in VB){v[n]=VB[n]();g.add(v[n])}const p={g,v};S.add(g);propSet(p,20-i*PSPAN/NPROP);PROPS.push(p)}
 const HOLOB=[],HOLOSP=720;for(let i=0;i<6;i++){const g=new THREE.Group(),pole=new THREE.Mesh(PG.cyl,PMt.pole);pole.scale.set(.3,9,.3);const m=new THREE.Mesh(new THREE.PlaneGeometry(12,6),new THREE.MeshBasicMaterial({map:signTex(false),transparent:true,opacity:.5,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,toneMapped:false}));m.position.y=12;g.add(pole,m);const h={g,m,ph:Math.random()*6,place(){const sd=Math.random()<.5?-1:1;g.position.x=sd*(16+Math.random()*10);m.rotation.y=sd*.5;m.material.map=SIGNM[(Math.random()*4|0)*2+1].map}};g.position.z=-60-i*HOLOSP/6;h.place();S.add(g);HOLOB.push(h)}
+const LAMPS=[],LSP=70,LBM=new THREE.MeshStandardMaterial({color:0xfff1c8,emissive:0xffd68a,emissiveIntensity:0}),LPT=(()=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d'),g=x.createRadialGradient(32,32,0,32,32,32);g.addColorStop(0,'#ffd9a0');g.addColorStop(1,'#ffd9a000');x.fillStyle=g;x.fillRect(0,0,64,64);return new THREE.CanvasTexture(c)})();
+for(let i=0;i<9;i++){const g=new THREE.Group(),sd=i%2?1:-1,p=new THREE.Mesh(PG.cyl,PMt.pole);p.scale.set(.22,7,.22);const a=new THREE.Mesh(PG.box,PMt.pole);a.scale.set(2.4,.14,.14);a.position.set(-sd*1.1,6.9,0);const bl=new THREE.Mesh(PG.box,LBM);bl.scale.set(.8,.14,.4);bl.position.set(-sd*1.9,6.75,0);const pool=new THREE.Mesh(new THREE.PlaneGeometry(9,9),new THREE.MeshBasicMaterial({map:LPT,transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending}));pool.rotation.x=-Math.PI/2;pool.position.set(-sd*3,.03,0);g.add(p,a,bl,pool);g.position.set(sd*7.4,0,-i*LSP);S.add(g);LAMPS.push({g,pool})}
 // water for the coast
 const waterM=new THREE.MeshStandardMaterial({color:0x2b6a8f,roughness:.15,metalness:.3,transparent:true,opacity:0});const WATER=new THREE.Mesh(new THREE.PlaneGeometry(1200,2400),waterM);WATER.rotation.x=-Math.PI/2;WATER.position.set(616,.02,0);FAR.add(WATER);
 // clouds
@@ -241,14 +243,16 @@ function ptexW(){const c=document.createElement('canvas');c.width=c.height=32;co
 // weather + time state
 const WXT={clear:{n:'Clear',i:'☀️',rain:0,snow:0,cloud:.15,fog:0},cloudy:{n:'Cloudy',i:'☁️',rain:0,snow:0,cloud:.85,fog:.15},rain:{n:'Rain',i:'🌧️',rain:1,snow:0,cloud:1,fog:.4},fog:{n:'Fog',i:'🌫️',rain:0,snow:0,cloud:.7,fog:1},snow:{n:'Snow',i:'🌨️',rain:0,snow:1,cloud:.9,fog:.45}};
 const FWX=WXT[Q.get('weather')]?Q.get('weather'):null,TODS={night:0,dawn:.27,morning:.36,day:.5,sunset:.73,dusk:.77},FTOD=Q.has('time')?(TODS[Q.get('time')]??(+Q.get('time')||.5)):null;
-const WX={k:FWX||'clear',rain:0,snow:0,cloud:.15,fog:0,next:40};let TOD=FTOD??.02,wInit=false,envCur=0,hudW=0,shadowSet=false;
+const WX={k:FWX||'clear',rain:0,snow:0,cloud:.15,fog:0,next:40};let CU=.234,TOD=FTOD??.02,wInit=false,envCur=0,hudW=0,shadowSet=false;
 const EC={g:new THREE.Color(),sh:new THREE.Color(),m:new THREE.Color(),cap:0,water:0};
-const C_=(h)=>new THREE.Color(h),SKY_DAY=[C_(0x4a8fd8),C_(0xbcd8ee)],SKY_SET=[C_(0x3a4f80),C_(0xf09a5a)],SKY_NIGHT=[C_(0x03060d),C_(0x111a2a)],GREY=[C_(0x6e7680),C_(0x9aa2aa)];
+const C_=(h)=>new THREE.Color(h),SKY_DAY=[C_(0x4a8fd8),C_(0xbcd8ee)],SKY_SET=[C_(0x3a4f80),C_(0xf09a5a)],SKY_NIGHT=[C_(0x000102),C_(0x03050a)],GREY=[C_(0x6e7680),C_(0x9aa2aa)];
 const _t1=new THREE.Color(),_t2=new THREE.Color(),_sd=new THREE.Vector3();
 let HEAD=null;
 function pickWeather(){const E=ENVS[envIdx(dist)].id,opts=E==='snow'?['snow','snow','cloudy','clear','fog']:E==='desert'?['clear','clear','cloudy','fog']:['clear','clear','cloudy','rain','rain','fog'];let k;do k=opts[Math.random()*opts.length|0];while(k===WX.k&&Math.random()<.7);return k}
+function nbM(o,k,skip){o.traverse(q=>{const m=q.material;if(m&&m.userData&&m.userData.b!=null&&!(skip&&skip.includes(q)))m.emissiveIntensity=m.userData.b*k})}
+function nightBoost(k){if(typeof EN==='undefined'||!EN)return;for(const e of EN)if(e.m)nbM(e.m,k,e.m.userData.lights);for(const p of PK)if(p.m)nbM(p.m,k);for(const p of EP)if(p.m)nbM(p.m,k)}
 function worldTick(dt){const d=dist||0,ap=wInit?1-Math.exp(-dt*.5):1,ap2=wInit?1-Math.exp(-dt*.35):1;
- if(!shadowSet&&typeof BODY!=='undefined'){shadowSet=true;BODY.traverse(o=>{if(o.isMesh)o.castShadow=true});HEAD=new THREE.SpotLight(0xfff2dd,0,55,.3,.6,1.4);HEAD.position.set(0,.6,-2.4);HEAD.target.position.set(0,0,-20);CAR.add(HEAD,HEAD.target)}
+ if(!shadowSet&&typeof BODY!=='undefined'){shadowSet=true;BODY.traverse(o=>{if(o.isMesh)o.castShadow=true});HEAD=new THREE.SpotLight(0xfff2dd,0,110,.36,.55,1.1);HEAD.position.set(0,.6,-2.4);HEAD.target.position.set(0,0,-20);CAR.add(HEAD,HEAD.target)}
  // environment
  const ei=envIdx(d),E=ENVS[ei];if(ei!==envCur&&wInit&&st==='play'){fxAnn&&fxAnn('ENTERING '+E.n.toUpperCase(),'#ffffff')}envCur=ei;
  EC.g.lerp(_t1.set(E.g),ap);EC.sh.lerp(_t1.set(E.sh),ap);EC.m.lerp(_t1.set(E.m),ap);EC.cap+=((E.cap?1:0)-EC.cap)*ap;EC.water+=((E.water?1:0)-EC.water)*ap;
@@ -257,7 +261,7 @@ function worldTick(dt){const d=dist||0,ap=wInit?1-Math.exp(-dt*.5):1,ap2=wInit?1
  if(!FWX&&WX.k==='snow'&&E.id!=='snow'&&E.id!=='city'&&ENVS[envIdx(d+250)].id!=='snow')WX.k='rain';if(!FWX&&WX.k==='rain'&&E.id==='desert')WX.k='cloudy';if(!FWX&&WX.k==='rain'&&E.id==='snow')WX.k='snow';
  const W=WXT[WX.k];for(const q of['rain','snow','cloud','fog'])WX[q]+=(W[q]-WX[q])*ap2;
  // time of day (full cycle ~4 min of play)
- if(FTOD==null)TOD=(TOD+dt/(st==='play'?240:600))%1;
+ if(FTOD==null){CU=(CU+dt/(st==='play'?260:650))%1;TOD=CU<.58?(.78+CU/.58*.44)%1:.22+(CU-.58)/.42*.56}
  const e=Math.sin((TOD-.25)*Math.PI*2),day=Math.max(0,Math.min(1,(e+.08)/.33)),night=1-Math.max(0,Math.min(1,(e+.12)/.14));
  let A,B;if(e>=.25){A=SKY_DAY[0];B=SKY_DAY[1];_t1.copy(A);_t2.copy(B)}else if(e>=0){const k=e/.25;_t1.copy(SKY_SET[0]).lerp(SKY_DAY[0],k);_t2.copy(SKY_SET[1]).lerp(SKY_DAY[1],k)}else if(e>=-.15){const k=(e+.15)/.15;_t1.copy(SKY_NIGHT[0]).lerp(SKY_SET[0],k);_t2.copy(SKY_NIGHT[1]).lerp(SKY_SET[1],k)}else{_t1.copy(SKY_NIGHT[0]);_t2.copy(SKY_NIGHT[1])}
  const gb=.15+.85*day,cl=WX.cloud*.75;SKYU.top.value.copy(_t1).lerp(_tg(GREY[0],gb),cl*.8);SKYU.hor.value.copy(_t2).lerp(_tg(GREY[1],gb),cl*.7);
@@ -265,17 +269,17 @@ function worldTick(dt){const d=dist||0,ap=wInit?1-Math.exp(-dt*.5):1,ap2=wInit?1
  // sun / moon
  const az=(TOD-.25)*Math.PI*2;_sd.set(-Math.cos(az)*.5,Math.max(-.2,e),-.85).normalize();const moon=e<-.05;if(moon)_sd.set(.3,.55,-.8).normalize();
  DL.position.copy(CAR.position).addScaledVector(_sd,40);DL.target.position.copy(CAR.position);
- DL.intensity=moon?.22*(1-cl*.6):2.6*Math.max(0,Math.min(1,e*4))*(1-cl*.65)+.05;DL.color.set(moon?0x9fb4ff:e<.2?0xffb070:0xfff1dd);DL.castShadow=!moon&&e>.05;
- HL.intensity=.18+.85*day*(1-cl*.25);HL.color.copy(_t2).lerp(_t1.set(0xffffff),.5);HL.groundColor.copy(EC.g).multiplyScalar(.6*gb);
+ DL.intensity=moon?.06*(1-cl*.6):2.6*Math.max(0,Math.min(1,e*4))*(1-cl*.65)+.05;DL.color.set(moon?0x9fb4ff:e<.2?0xffb070:0xfff1dd);DL.castShadow=!moon&&e>.05;
+ HL.intensity=.035+.95*day*(1-cl*.25);HL.color.copy(_t2).lerp(_t1.set(0xffffff),.5);HL.groundColor.copy(EC.g).multiplyScalar(.6*gb);
  sun.position.copy(CAM.position).addScaledVector(_sd,1100);sun.lookAt(CAM.position);sun.material.color.set(moon?0xdfe6f2:e<.15?0xffc070:0xfff4d6);sun.scale.setScalar(moon?.2:.3);sun.material.opacity=(moon?.9:1)*(1-WX.cloud*.85);
  if(window.__STARS)window.__STARS.material.opacity=night*(1-WX.cloud);
  // materials by env/light
  ground.material.color.copy(EC.g);shM.color.copy(EC.sh);mtnM.color.copy(EC.m);for(const m of MTN)m.userData.cap.visible=EC.cap>.5||m.userData.h>110;waterM.opacity=EC.water;WATER.visible=EC.water>.01;
  roadM.roughness=.92-.5*WX.rain;roadM.envMapIntensity=.15+.6*WX.rain;roadM.color.setScalar(1).set(0x3a3c40).multiplyScalar(1-WX.rain*.35);ground.material.color.lerp(_t1.set(0xf0f3f6),WX.snow*.5);
- CLM.opacity=.25+WX.cloud*.6;CLM.color.setScalar(.35+.65*gb).lerp(_t1.set(0x777e88),WX.rain*.6);for(const c of CLOUDS)c.position.x+=dt*3;
- const nl=Math.max(night,WX.fog*.25,WX.rain*.35*(1-day*.5));for(const m of BMAT)m.emissiveIntensity=night*.9;for(const m of [...BMAT,ground.material,shM,railM,mtnM,PMt.pole,PMt.wall,PMt.rock,dashM,edgeM])m.envMapIntensity=.08+.92*gb;PMt.bulb.emissiveIntensity=night*2;const nn=Math.max(night,1-gb);ACC1.emissiveIntensity=ACC2.emissiveIntensity=.7+nn*2.4;for(const m of SIGNM)m.color.setScalar(.4+1.1*nn);for(const h of HOLOB){h.m.material.opacity=(.25+.5*nn)*(.85+.15*Math.sin(performance.now()/180+h.ph));if(h.g.position.z>-d+30){h.g.position.z-=HOLOSP;h.place()}}edgeM.emissive.setHex(0x00e5ff);edgeM.emissiveIntensity=.05+(1-day)*.6;ugM.opacity=0;
- if(HEAD)HEAD.intensity=nl*22;if(FLB)FLB.material.emissiveIntensity=.6+nl*4;
- if(typeof paint!=='undefined'){paint.envMapIntensity=.25+1.15*gb;glassM.envMapIntensity=.4+1.6*gb}
+ CLM.opacity=.25+WX.cloud*.6;CLM.color.setScalar(.05+.95*day).lerp(_t1.set(0x777e88),WX.rain*.6);for(const c of CLOUDS)c.position.x+=dt*3;
+ const nl=Math.max(night,WX.fog*.25,WX.rain*.35*(1-day*.5));for(const m of BMAT)m.emissiveIntensity=night*.9;for(const m of [...BMAT,ground.material,shM,railM,mtnM,PMt.pole,PMt.wall,PMt.rock,dashM,edgeM])m.envMapIntensity=.015+.985*day;PMt.bulb.emissiveIntensity=night*2;nightBoost(1+night*4);dashM.emissive.setHex(0xffffff);dashM.emissiveIntensity=night*.12;for(const L of LAMPS){L.pool.material.opacity=night*.32;if(L.g.position.z>-d+30)L.g.position.z-=LSP*LAMPS.length;}LBM.emissiveIntensity=night*2.5;const nn=Math.max(night,1-gb);ACC1.emissiveIntensity=ACC2.emissiveIntensity=.7+nn*2.4;for(const m of SIGNM)m.color.setScalar(.4+1.1*nn);for(const h of HOLOB){h.m.material.opacity=(.25+.5*nn)*(.85+.15*Math.sin(performance.now()/180+h.ph));if(h.g.position.z>-d+30){h.g.position.z-=HOLOSP;h.place()}}edgeM.emissive.setHex(0x00e5ff);edgeM.emissiveIntensity=.05+(1-day)*.6;ugM.opacity=0;
+ if(HEAD)HEAD.intensity=nl*70;if(FLB)FLB.material.emissiveIntensity=.6+nl*4;
+ if(typeof paint!=='undefined'){paint.envMapIntensity=.12+1.28*day;glassM.envMapIntensity=.4+1.6*gb}
  SKY.position.copy(CAM.position);
  // props recycle
  const cz=-d;for(const p of PROPS)if(p.g.position.z>cz+30)propSet(p,p.g.position.z-PSPAN);
@@ -446,7 +450,7 @@ setTimeout(showTouch,0);
 addEventListener('contextmenu',e=>e.preventDefault());document.addEventListener('gesturestart',e=>e.preventDefault());document.addEventListener('touchmove',e=>{if(e.touches.length>1||e.target.closest&&e.target.closest('#tc,canvas'))e.preventDefault()},{passive:false});
 function title(){st='title';$('ui').className='';CAR.visible=true;fxReset();applySkin();P.spinA=0;P.spinV=0;upright();$('hud').style.display='none';for(const b of $('tb').children)b.style.display='none';
  $('ui').innerHTML=`<div class="p"><h1 class="gl" data-text="ROADSUCTION">ROADSUCTION</h1><div class="tag">FLY · FLIP · DRIVE UPSIDE DOWN</div><p>Cold-gas thrusters. Suction fans. Drive the ceiling.</p><div id="htw">${howto()}</div><button id="go">LAUNCH 🚀</button><button class="s" id="shopb">🛒 SHOP</button><p class="k">Best: ${best}</p>${fxTitleInfo()}</div>`;$('go').onclick=e=>{e.stopPropagation();thrustOn()};$('shopb').onclick=e=>{e.stopPropagation();au();shopOpen()};wireHowto()}
-function start(){$('ui').className='';if(typeof TOD!=='undefined'){if(FTOD==null)TOD=.02;if(!FWX){WX.k='clear';WX.next=40}wInit=false}applyUpgrades();reset();fxStart();st='play';paused=false;$('ui').innerHTML='';$('hud').style.display='';hpHud();for(const b of $('tb').children)b.style.display='block';CAR.visible=true;CAM.position.set(P.x*.7,3.4,-dist+9.5);showTouch();tone(220,.6,'sawtooth',.08,880)}
+function start(){$('ui').className='';if(typeof TOD!=='undefined'){if(FTOD==null){CU=.234;TOD=.02}if(!FWX){WX.k='clear';WX.next=40}wInit=false}applyUpgrades();reset();fxStart();st='play';paused=false;$('ui').innerHTML='';$('hud').style.display='';hpHud();for(const b of $('tb').children)b.style.display='block';CAR.visible=true;CAM.position.set(P.x*.7,3.4,-dist+9.5);showTouch();tone(220,.6,'sawtooth',.08,880)}
 function over(why){if(st!=='play')return;setTimeout(showTouch,0);st='over';overT=performance.now();document.body.classList.add('glx');setTimeout(()=>document.body.classList.remove('glx'),650);shake=1.2;noise(.7,.35);tone(120,.7,'square',.15,30);CAR.visible=false;fxEnd();
  for(let i=0;i<180;i++)emit(P.x,P.y+.5,-dist,(Math.random()-.5)*18,Math.random()*12,(Math.random()-.5)*18,Math.random()<.5?FIREC:GOLD,1.3,1);
  score=Math.floor(score);const nb=score>best;if(nb){best=score;localStorage.setItem('rd_best',best)}for(const b of $('tb').children)b.style.display='none';
