@@ -42,7 +42,7 @@ kbd{display:inline-block;min-width:18px;padding:2px 6px;border:1px solid var(--c
 kbd.m{border-color:var(--m);color:var(--m);background:#1a0020;box-shadow:0 0 6px #ff2bd655}
 .goal{margin-top:9px;font-size:12px;line-height:1.6;color:#ffd6f6;border-top:1px dashed #ff2bd666;padding-top:7px}.goal b{color:#7cff6b}
 @media (max-width:560px){#hp{width:96px}#bar{width:120px}#hud{padding-right:26px}.ht ul{grid-template-columns:1fr}h1.gl{font-size:38px;letter-spacing:6px}.p{padding:16px 14px}}
-#tc{position:fixed;inset:0;pointer-events:none;z-index:9;display:none}
+#tc{position:fixed;inset:0;height:100dvh;pointer-events:none;z-index:9;display:none}
 #tc .tb{position:absolute;pointer-events:auto;touch-action:none;-webkit-user-select:none;user-select:none;display:flex;align-items:center;justify-content:center;font:800 14px inherit;letter-spacing:1px;color:#fff;
  background:#00f0ff22;border:2px solid #00f0ffaa;box-shadow:0 0 14px #00f0ff55,inset 0 0 14px #00f0ff33;border-radius:50%;text-shadow:0 0 6px var(--c)}
 #tc .tb.m{background:#ff2bd622;border-color:#ff2bd6bb;box-shadow:0 0 14px #ff2bd655,inset 0 0 14px #ff2bd633;text-shadow:0 0 6px var(--m)}
@@ -287,7 +287,19 @@ function howto(){const K=(...a)=>a.map(x=>`<kbd>${x}</kbd>`).join(''),T=(...a)=>
  return `<div class="ht"><h3>▚ HOW TO DRIVE <span class="tabs"><button data-m="kbd" class="${htMode==='kbd'?'on':''}">⌨ KEYBOARD</button><button data-m="touch" class="${htMode==='touch'?'on':''}">☝ TOUCH</button></span></h3><ul>${(htMode==='kbd'?kb:tc).map(([k,t])=>`<li>${k}<span>${t}</span></li>`).join('')}</ul>
  <div class="goal">▸ Fly over traffic · flip &amp; ride loops for <b style="color:var(--y)">COMBO</b><br>▸ Grab <b>green wrench orbs</b> to repair (+200)<br>▸ <b style="color:var(--c)">1500 HP</b> · top speed <b style="color:var(--m)">531 km/h</b> · land wheels-down!<br>▸ Under a ceiling? Half-flip to stick upside down.</div></div>`}
 function wireHowto(){document.querySelectorAll('.tabs button').forEach(b=>b.onclick=e=>{e.stopPropagation();htMode=b.dataset.m;const w=$('htw');if(w){w.innerHTML=howto();wireHowto()}})}
-function showTouch(){$('tc').style.display=(touchUI&&st==='play'&&!paused)?'block':'none'}
+function showTouch(){const on=touchUI&&(st==='play'&&!paused||Q.has('rectcheck'));$('tc').style.display=on?'block':'none';if(on)layoutTouch()}
+const SAP=document.createElement('div');SAP.style.cssText='position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)';document.body.appendChild(SAP);
+function layoutTouch(){const vv=window.visualViewport,W=vv?vv.width:innerWidth,H=vv?vv.height:innerHeight,ox=vv?vv.offsetLeft:0,oy=vv?vv.offsetTop:0,cs=getComputedStyle(SAP);
+ const iT=parseFloat(cs.paddingTop)||0,iR=parseFloat(cs.paddingRight)||0,iB=parseFloat(cs.paddingBottom)||0,iL=parseFloat(cs.paddingLeft)||0,iOS=/iP(hone|ad|od)/.test(navigator.userAgent);
+ const port=H>=W,pad=10,F=Math.min(W*(port?.28:.16),120,H*.3),d=Math.min(W*(port?.17:.1),72,H*.17),S=Math.min(W*(port?.2:.11),84,H*.2),mb=iB+(iOS?22:14);
+ const place=(id,x,y,sz)=>{const el=$(id);x=Math.max(iL+4,Math.min(W-iR-4-sz,x));y=Math.max(iT+4,Math.min(H-iB-4-sz,y));Object.assign(el.style,{left:(ox+x)+'px',top:(oy+y)+'px',right:'auto',bottom:'auto',width:sz+'px',height:sz+'px'})};
+ place('tL',iL+pad,H-mb-S,S);place('tR',iL+pad+S+10,H-mb-S,S);
+ const cx=W-iR-pad-F/2,cy=H-mb-F/2,r=F/2+d/2+14;place('tF',cx-F/2,cy-F/2,F);
+ [['tB',182],['tD',136],['tU',90]].forEach(([id,a])=>{const t=a*Math.PI/180;place(id,cx+Math.cos(t)*r-d/2,cy-Math.sin(t)*r-d/2,d)});place('tO',cx-d/2,cy-r-d/2-d-10,d);
+ if(Q.has('rectcheck'))console.log('RECTS '+JSON.stringify({W,H,rects:['tL','tR','tF','tB','tD','tU','tO'].map(i=>{const b=$(i).getBoundingClientRect();return [i,Math.round(b.left),Math.round(b.top),Math.round(b.right),Math.round(b.bottom),b.left>=0&&!['tL','tR','tF','tB','tD','tU','tO'].some(j=>{if(j===i)return false;const c=$(j).getBoundingClientRect();return Math.hypot((b.left+b.right-c.left-c.right)/2,(b.top+b.bottom-c.top-c.bottom)/2)<(b.width+c.width)/2})&&b.top>=0&&b.right<=innerWidth&&b.bottom<=innerHeight]})}))}
+['resize','orientationchange'].forEach(t=>addEventListener(t,()=>setTimeout(showTouch,60)));if(window.visualViewport){visualViewport.addEventListener('resize',showTouch);visualViewport.addEventListener('scroll',showTouch)}
+if(window.visualViewport&&visualViewport.scale>1.01){const t=document.createElement('div');t.textContent='Pinch out or reload to reset zoom';t.style.cssText='position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 60px);transform:translateX(-50%);z-index:20;background:#14002ae6;border:1px solid #ff2bd6;color:#fff;padding:8px 14px;font-size:13px;box-shadow:0 0 12px #ff2bd6;pointer-events:none';document.body.appendChild(t);setTimeout(()=>t.remove(),6000)}
+setTimeout(showTouch,0);
 // touch buttons (multitouch, isolated from canvas gestures)
 {const hold=(id,dn,up)=>{const el=$(id);const d=e=>{e.preventDefault();e.stopPropagation();au();try{el.setPointerCapture(e.pointerId)}catch(_){}el.classList.add('dn');dn()};const u=e=>{e.preventDefault();e.stopPropagation();if(!el.classList.contains('dn'))return;el.classList.remove('dn');up&&up()};
   el.addEventListener('pointerdown',d);el.addEventListener('pointerup',u);el.addEventListener('pointercancel',u);el.addEventListener('lostpointercapture',u);el.addEventListener('contextmenu',e=>e.preventDefault())};
